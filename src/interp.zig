@@ -83,9 +83,9 @@ fn applyValue(allocator: std.mem.Allocator, func: Value, args: []const Value) In
 
             // Bind each parameter to its argument in the closure's environment,
             // then evaluate the body in that new environment.
-            const new_env = env_mod.extendMulti(allocator, c.env, c.params, args) catch
+            const new_env = env_mod.extendMulti(allocator, c.env.?, c.params, args) catch
                 return error.OutOfMemory;
-            return interp(allocator, c.body, new_env);
+            return interp(allocator, c.body.?, new_env);
         },
         // Dispatch built-in operators to their handler.
         .primop => |op| return applyPrimop(op, args),
@@ -211,11 +211,11 @@ fn applyPrimop(op: PrimOp, args: []const Value) InterpError!Value {
                 else => return error.TypeError,
             };
             const start = switch (args[1]) {
-                .num => |n| @as(usize, n),
+                .num => |n| @as(usize, @intFromFloat(n)),
                 else => return error.TypeError,
             };
             const stop = switch (args[2]) {
-                .num => |n| @as(usize, n),
+                .num => |n| @as(usize, @intFromFloat(n)),
                 else => return error.TypeError,
             };
             if (start > stop or stop > s.len) return error.TypeError;
@@ -258,7 +258,7 @@ fn applyPrimop(op: PrimOp, args: []const Value) InterpError!Value {
                 else => return error.TypeError,
             };
             const index = switch (args[1]) {
-                .num => |n| @as(usize, n),
+                .num => |n| @as(usize, @intFromFloat(n)),
                 else => return error.TypeError,
             };
             if (index >= arr.len) return error.TypeError;
@@ -272,7 +272,7 @@ fn applyPrimop(op: PrimOp, args: []const Value) InterpError!Value {
                 else => return error.TypeError,
             };
             const index = switch (args[1]) {
-                .num => |n| @as(usize, n),
+                .num => |n| @as(usize, @intFromFloat(n)),
                 else => return error.TypeError,
             };
             if (index >= arr.len) return error.TypeError;
@@ -281,7 +281,7 @@ fn applyPrimop(op: PrimOp, args: []const Value) InterpError!Value {
                 else => return error.TypeError,
             };
 
-            arr[index] = new_val;
+            @constCast(arr)[index] = new_val;
             return Value{
                 .closure = .{
                     .params = arr,
