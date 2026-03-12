@@ -43,8 +43,8 @@ pub const Value = union(enum) {
     /// A closure: a function value paired with its defining environment
     closure: struct {
         params: []const []const u8,
-        body: *const Expr,
-        env: *const Env,
+        body: ?*const Expr,
+        env: ?*const Env,
     },
 
     /// A primitive operator, like + or <=
